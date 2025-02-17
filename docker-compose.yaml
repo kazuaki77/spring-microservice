@@ -1,0 +1,76 @@
+version: '3.7'
+
+services:
+    currency-exchange:
+        image: in28min/mmv3-currency-exchange-service:0.0.1-SNAPSHOT
+        container_name: currency-exchange
+        depends_on:
+            - db
+            - naming-server
+        environment:
+            DB_HOST: db
+            DB_USER: root
+            DB_PASSWORD: Zaq12wsx
+            DB_NAME: test_db
+            SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
+        mem_limit: 700m
+        ports:
+            - "8000:8000"
+        networks:
+            - currency-network
+    
+    currency-conversion:
+        image: in28min/mmv3-currency-conversion-service:0.0.1-SNAPSHOT
+        container_name: currency-conversion
+        depends_on:
+            - db
+            - naming-server
+        environment:
+            DB_HOST: db
+            DB_USER: root
+            DB_PASSWORD: Zaq12wsx
+            DB_NAME: test_db
+            spring.zipkin.baseUrl: http://zipkin-server:9411/
+        mem_limit: 700m
+        ports:
+            - "8100:8100"
+        networks:
+            - currency-network
+    
+    naming-server:
+        image: in28min/mmv3-naming-server:0.0.1-SNAPSHOT
+        container_name: naming-server
+        mem_limit: 700m
+        ports:
+            - "8761:8761"
+        networks:
+            - currency-network
+    zipkin-server:
+        image: openzipkin/zipkin:latest
+        container_name: zipkin-server
+        mem_limit: 700m
+        ports:
+            - "9411:9411"
+        networks:
+            - currency-network
+    
+    db:
+        image: mysql:latest
+        container_name: mysql-container
+        environment:
+            MYSQL_ROOT_PASSWORD: Zaq12wsx
+            MYSQL_DATABASE: test_db
+        ports:
+            - "3307:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+        networks:
+            - currency-network
+
+
+networks:
+    currency-network:
+        driver: bridge
+
+volumes:
+    mysql_data:
